@@ -17,19 +17,42 @@ FINE_PIXEL_SIZE_UM = 0.05
 FINE_FIELD_SIZE_UM = FINE_SIZE_PX * FINE_PIXEL_SIZE_UM
 
 # Centers are in the mosaic's physical coordinate system (micrometres).
-FINE_REGIONS = (
-    {"id": "001", "center_um": (36.0, 42.0), "label": "isolated_Fe_particle"},
-    {"id": "002", "center_um": (79.0, 80.0), "label": "partially_overlapping_Fe_Mn_pair"},
-    {"id": "003", "center_um": (126.0, 53.0), "label": "three_element_overlap"},
-    {"id": "004", "center_um": (178.0, 70.0), "label": "nearby_non_touching_Fe_Cr_pair"},
-    {"id": "005", "center_um": (94.0, 177.0), "label": "large_Mn_Cr_particle"},
-    {"id": "006", "center_um": (209.0, 207.0), "label": "large_isolated_Cr_particle"},
-    {"id": "007", "center_um": (54.0, 132.0), "label": "isolated_Mn_particle"},
-    {"id": "008", "center_um": (146.0, 145.0), "label": "partially_overlapping_Fe_Cr_pair"},
-    {"id": "009", "center_um": (185.0, 121.0), "label": "nearby_non_touching_Mn_Cr_pair"},
-    {"id": "010", "center_um": (229.0, 35.0), "label": "small_three_element_cluster"},
-)
 ELEMENTS = ("Fe", "Mn", "Cr")
+COMBINATIONS = (
+    ("Fe",),
+    ("Mn",),
+    ("Cr",),
+    ("Fe", "Mn"),
+    ("Fe", "Cr"),
+    ("Mn", "Cr"),
+    ("Fe", "Mn", "Cr"),
+)
+LAYOUT_SEED = 20260804
+
+
+def scattered_centers(count: int) -> tuple[tuple[float, float], ...]:
+    """Create a repeatable, non-grid layout with generous space between AOIs."""
+    rng = np.random.default_rng(LAYOUT_SEED)
+    centers: list[tuple[float, float]] = []
+    minimum_spacing_um = 28.0
+    while len(centers) < count:
+        candidate = tuple(float(value) for value in rng.uniform(15.0, 245.0, size=2))
+        if all(np.hypot(candidate[0] - x, candidate[1] - y) >= minimum_spacing_um for x, y in centers):
+            centers.append(candidate)
+    return tuple(centers)
+
+
+REGION_COMBINATIONS = COMBINATIONS * 2 + (("Fe",), ("Mn",), ("Cr",), ("Fe", "Mn"), ("Fe", "Cr"), ("Mn", "Cr"))
+REGION_CENTERS = scattered_centers(len(REGION_COMBINATIONS))
+FINE_REGIONS = tuple(
+    {
+        "id": f"{index:03}",
+        "center_um": center,
+        "elements": elements,
+        "label": "_".join(elements) + ("_particle" if len(elements) == 1 else "_cluster"),
+    }
+    for index, (center, elements) in enumerate(zip(REGION_CENTERS, REGION_COMBINATIONS, strict=True), start=1)
+)
 
 
 def gaussian(
@@ -55,58 +78,28 @@ def synthetic_element(x: np.ndarray, y: np.ndarray, element: str) -> np.ndarray:
     signal = np.full_like(x, 12.0, dtype=np.float64)
     signal += 1.8 * np.sin(x / 17.0) * np.cos(y / 23.0)
 
-    # Sparse particles: isolated objects, partial overlaps, three-element
-    # overlap, and a pair that is close but deliberately non-touching.
-    particles = (
-        # x, y, sigma_x, sigma_y, angle, Fe, Mn, Cr
-        (36.0, 42.0, 1.4, 2.4, 15.0, 245.0, 0.0, 0.0),
-        (76.8, 79.4, 2.5, 1.4, -20.0, 215.0, 0.0, 0.0),
-        (80.7, 81.5, 2.0, 2.9, 35.0, 0.0, 210.0, 0.0),
-        (124.5, 52.0, 2.6, 1.8, 10.0, 190.0, 0.0, 0.0),
-        (127.0, 54.0, 2.0, 2.7, -35.0, 0.0, 185.0, 0.0),
-        (126.0, 50.5, 1.6, 2.1, 45.0, 0.0, 0.0, 205.0),
-        (174.0, 70.0, 1.5, 2.0, 0.0, 225.0, 0.0, 0.0),
-        (182.0, 70.2, 1.6, 1.4, 20.0, 0.0, 0.0, 230.0),
-        (94.0, 177.0, 4.6, 2.8, -10.0, 0.0, 210.0, 105.0),
-        (98.0, 179.0, 2.3, 1.5, 40.0, 0.0, 75.0, 185.0),
-        (209.0, 207.0, 5.5, 3.7, 25.0, 45.0, 0.0, 250.0),
-        (54.0, 132.0, 2.4, 1.7, 55.0, 0.0, 235.0, 0.0),
-        (144.5, 144.0, 3.1, 1.8, -15.0, 205.0, 0.0, 0.0),
-        (147.8, 146.2, 2.0, 2.8, 35.0, 0.0, 0.0, 215.0),
-        (181.0, 120.5, 1.9, 1.3, 10.0, 0.0, 205.0, 0.0),
-        (189.0, 121.8, 1.5, 2.2, -30.0, 0.0, 0.0, 220.0),
-        (228.0, 34.0, 1.8, 1.3, 5.0, 110.0, 45.0, 0.0),
-        (230.2, 35.6, 1.4, 1.9, 40.0, 0.0, 100.0, 55.0),
-        (228.8, 37.2, 1.2, 1.5, -25.0, 40.0, 0.0, 125.0),
-        (48.0, 224.0, 2.0, 3.1, -40.0, 90.0, 145.0, 0.0),
-    )
-    element_index = {"Fe": 5, "Mn": 6, "Cr": 7}[element]
-    for particle in particles:
-        amplitude = particle[element_index]
-        if amplitude:
-            signal += gaussian(x, y, *particle[:5], amplitude)
-
-    # Sub-micron details are visible in fine scans but mostly disappear in the
-    # coarser mosaic. They make the selected scan genuinely more informative.
-    fine_features = (
-        (35.4, 41.1, 0.22, 0.35, 20.0, {"Fe": 130.0, "Mn": 0.0, "Cr": 0.0}),
-        (77.5, 80.1, 0.30, 0.20, -25.0, {"Fe": 130.0, "Mn": 0.0, "Cr": 0.0}),
-        (81.2, 82.0, 0.20, 0.36, 30.0, {"Fe": 0.0, "Mn": 140.0, "Cr": 0.0}),
-        (125.2, 53.3, 0.25, 0.18, 0.0, {"Fe": 80.0, "Mn": 95.0, "Cr": 110.0}),
-        (173.7, 69.2, 0.24, 0.32, 15.0, {"Fe": 145.0, "Mn": 0.0, "Cr": 0.0}),
-        (182.5, 70.7, 0.28, 0.20, -10.0, {"Fe": 0.0, "Mn": 0.0, "Cr": 150.0}),
-        (95.5, 176.0, 0.35, 0.22, 35.0, {"Fe": 0.0, "Mn": 115.0, "Cr": 80.0}),
-        (207.5, 208.0, 0.32, 0.40, -30.0, {"Fe": 0.0, "Mn": 0.0, "Cr": 170.0}),
-        (53.5, 132.3, 0.22, 0.34, 45.0, {"Fe": 0.0, "Mn": 155.0, "Cr": 0.0}),
-        (145.0, 144.8, 0.36, 0.20, -15.0, {"Fe": 140.0, "Mn": 0.0, "Cr": 0.0}),
-        (148.2, 146.6, 0.20, 0.32, 35.0, {"Fe": 0.0, "Mn": 0.0, "Cr": 160.0}),
-        (180.7, 120.1, 0.25, 0.20, 10.0, {"Fe": 0.0, "Mn": 140.0, "Cr": 0.0}),
-        (189.3, 122.4, 0.18, 0.30, -20.0, {"Fe": 0.0, "Mn": 0.0, "Cr": 165.0}),
-        (229.0, 35.7, 0.22, 0.24, 0.0, {"Fe": 90.0, "Mn": 105.0, "Cr": 115.0}),
-    )
-    for x0, y0, sigma_x, sigma_y, angle, amplitudes in fine_features:
-        if amplitudes[element]:
-            signal += gaussian(x, y, x0, y0, sigma_x, sigma_y, angle, amplitudes[element])
+    # Each selected region receives one or more element-specific particles.
+    # Pairs alternate between partial overlap and a close non-touching layout.
+    offsets_by_count = {
+        1: ((0.0, 0.0),),
+        2: ((-1.2, -0.6), (1.2, 0.6)),
+        3: ((-1.3, -0.8), (1.3, -0.5), (0.0, 1.3)),
+    }
+    for region_index, region in enumerate(FINE_REGIONS, start=1):
+        components = offsets_by_count[len(region["elements"])]
+        if len(components) == 2 and region_index % 2 == 0:
+            components = ((-2.3, 0.0), (2.3, 0.0))
+        center_x, center_y = region["center_um"]
+        for element_index, (particle_element, (offset_x, offset_y)) in enumerate(zip(region["elements"], components, strict=True)):
+            if particle_element != element:
+                continue
+            sigma_x = 1.2 + 0.35 * ((region_index + element_index) % 5)
+            sigma_y = 1.3 + 0.30 * ((2 * region_index + element_index) % 5)
+            angle = float((region_index * 29 + element_index * 47) % 180)
+            amplitude = 180.0 + 15.0 * ((region_index + 2 * element_index) % 5)
+            particle_x, particle_y = center_x + offset_x, center_y + offset_y
+            signal += gaussian(x, y, particle_x, particle_y, sigma_x, sigma_y, angle, amplitude)
+            signal += gaussian(x, y, particle_x + 0.35, particle_y - 0.25, 0.22, 0.30, angle + 20.0, 95.0)
 
     return signal.astype(np.float32)
 
@@ -164,6 +157,7 @@ def main() -> None:
                 "field_of_view_um": [FINE_FIELD_SIZE_UM, FINE_FIELD_SIZE_UM],
                 "center_in_mosaic_um": list(region["center_um"]),
                 "planned_region": region["label"],
+                "elements": list(region["elements"]),
             }
         )
     (OUTPUT_DIR / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n")

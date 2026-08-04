@@ -1,11 +1,11 @@
-"""Build merged RGB fine-scan TIFFs from Fe, Cr, and Mn fine-spot maps.
+"""Build merged RGB fine-scan TIFFs from Mn, Fe, and Cr fine-spot maps.
 
 The coarse mosaic files are intentionally not read or modified here. Each
 ``fine_spot_###_<element>.tiff`` is a source plane for one
-``fine_scan_###_merged_Fe_Cr_Mn.tiff`` RGB output. The merge operation is a
+``fine_scan_###_merged_Mn_Fe_Cr.tiff`` RGB output. The merge operation is a
 pixelwise maximum, which supports multiple source planes per region in a
 future tiling workflow while leaving today's one-plane-per-region data
-unchanged. Fe is the red channel, Cr green, and Mn blue.
+unchanged. Mn is the red channel, Fe green, and Cr blue.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ DATA_DIR = Path(__file__).resolve().parents[1] / "fake_data"
 ELEMENTS = ("Fe", "Mn", "Cr")
 SOURCE_PATTERN = re.compile(r"fine_spot_(\d+)_(Fe|Mn|Cr)\.tiff$")
 OLD_OUTPUT_PATTERN = re.compile(r"fine_scan_\d+_(Fe|Mn|Cr)\.tiff$")
-MERGED_OUTPUT_PATTERN = re.compile(r"fine_scan_\d+_merged_Fe_Cr_Mn\.tiff$")
+MERGED_OUTPUT_PATTERN = re.compile(r"fine_scan_\d+_merged_(Fe_Cr_Mn|Mn_Fe_Cr)\.tiff$")
 
 
 def merge_planes(paths: list[Path]) -> np.ndarray:
@@ -68,13 +68,13 @@ def main() -> None:
         element_planes = {element: merge_planes(elements[element]) for element in ELEMENTS}
         rgb = np.stack(
             [
+                normalize_to_uint8(element_planes["Mn"]),
                 normalize_to_uint8(element_planes["Fe"]),
                 normalize_to_uint8(element_planes["Cr"]),
-                normalize_to_uint8(element_planes["Mn"]),
             ],
             axis=-1,
         )
-        output = DATA_DIR / f"fine_scan_{scan_id}_merged_Fe_Cr_Mn.tiff"
+        output = DATA_DIR / f"fine_scan_{scan_id}_merged_Mn_Fe_Cr.tiff"
         tifffile.imwrite(output, rgb, photometric="rgb")
         print(f"Wrote {output.name}")
 

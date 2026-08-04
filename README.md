@@ -97,7 +97,7 @@ source maps with:
 pixi run python scripts/generate_fake_data.py
 ```
 
-To create one merged Fe/Cr/Mn RGB fine-scan TIFF for each selected region,
+To create one merged Mn/Fe/Cr RGB fine-scan TIFF for each selected region,
 without changing the coarse mosaics, run:
 
 ```bash

@@ -1,0 +1,6 @@
+.pixi/
+__pycache__/
+*.py[cod]
+output/*.json
+output/*.txt
+!output/.gitkeep

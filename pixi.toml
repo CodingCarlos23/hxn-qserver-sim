@@ -1,0 +1,18 @@
+[workspace]
+name = "hxn-qserver-sim"
+version = "0.1.0"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[dependencies]
+python = "3.11.*"
+bluesky = ">=1.15,<2"
+bluesky-queueserver = ">=0.0.24,<0.0.25"
+bluesky-queueserver-api = ">=0.0.13,<0.0.14"
+ipython = ">=8,<10"
+
+[tasks]
+manager = "start-re-manager --startup-dir startup --redis-name-prefix hxn-qserver-sim"
+generate-lists = "qserver-list-plans-devices --startup-dir startup --file-dir startup"
+environment-open = "qserver environment open"
+status = "qserver status"

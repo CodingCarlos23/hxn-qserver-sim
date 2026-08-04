@@ -10,6 +10,8 @@ bluesky = ">=1.15,<2"
 bluesky-queueserver = ">=0.0.24,<0.0.25"
 bluesky-queueserver-api = ">=0.0.13,<0.0.14"
 ipython = ">=8,<10"
+numpy = ">=1.26,<3"
+tifffile = ">=2024.1,<2027"
 
 [tasks]
 manager = "start-re-manager --startup-dir startup --redis-name-prefix hxn-qserver-sim"

@@ -86,18 +86,27 @@ QueueServer validation, queuing, starting, execution, and status handling. It
 does not validate HXN hardware behavior, real plan logic, data export, or
 beamline authorization.
 
+## Synthetic test data
+
+`fake_data/` contains a deterministic Fe-only sample dataset for local image
+workflow development:
+
+- `mosaic_Fe.tiff`: a 1040 x 1040 float32 coarse mosaic covering 260 x 260 um
+  at 0.25 um/pixel.
+- `fine_spot_001_Fe.tiff` through `fine_spot_003_Fe.tiff`: 200 x 200 float32
+  fine scans of selected mosaic features. Each covers 10 x 10 um at 0.05
+  um/pixel, five times the mosaic's linear resolution.
+
+The files describe the same synthetic sample: a fine scan is spatially aligned
+with its corresponding region in the mosaic, while exposing extra small-scale
+features. `fake_data/metadata.json` records each fine scan's center in mosaic
+coordinates. Regenerate the dataset with:
+
+```bash
+pixi run python scripts/generate_fake_data.py
+```
+
 ## TODO
-
-- Generate three fake element-like XRF TIFF images with known blobs, then use
-  them to test the complete local workflow:
-
-  ```text
-  fake TIFFs → X-AutoMap detection → boxes → Queue Selected Plans
-  → local QueueServer simulator → dated receipts
-  ```
-
-  This should validate OpenCV processing, blob detection, union-box generation,
-  and fine-scan planning without beamline data.
 
 - Move QueueServer submission and status polling to a background GUI task so
   opening a worker or starting a queue never pauses the interface.

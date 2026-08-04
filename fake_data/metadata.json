@@ -1,0 +1,65 @@
+{
+  "element": "Fe",
+  "mosaic": {
+    "file": "mosaic_Fe.tiff",
+    "shape_px": [
+      1040,
+      1040
+    ],
+    "pixel_size_um": 0.25,
+    "field_of_view_um": [
+      260.0,
+      260.0
+    ]
+  },
+  "fine_scans": [
+    {
+      "file": "fine_spot_001_Fe.tiff",
+      "shape_px": [
+        200,
+        200
+      ],
+      "pixel_size_um": 0.05,
+      "field_of_view_um": [
+        10.0,
+        10.0
+      ],
+      "center_in_mosaic_um": [
+        78.0,
+        92.0
+      ]
+    },
+    {
+      "file": "fine_spot_002_Fe.tiff",
+      "shape_px": [
+        200,
+        200
+      ],
+      "pixel_size_um": 0.05,
+      "field_of_view_um": [
+        10.0,
+        10.0
+      ],
+      "center_in_mosaic_um": [
+        151.0,
+        61.0
+      ]
+    },
+    {
+      "file": "fine_spot_003_Fe.tiff",
+      "shape_px": [
+        200,
+        200
+      ],
+      "pixel_size_um": 0.05,
+      "field_of_view_um": [
+        10.0,
+        10.0
+      ],
+      "center_in_mosaic_um": [
+        207.0,
+        184.0
+      ]
+    }
+  ]
+}

@@ -18,16 +18,32 @@ FINE_FIELD_SIZE_UM = FINE_SIZE_PX * FINE_PIXEL_SIZE_UM
 
 # Centers are in the mosaic's physical coordinate system (micrometres).
 FINE_REGIONS = (
-    {"id": "001", "center_um": (78.0, 92.0)},
-    {"id": "002", "center_um": (151.0, 61.0)},
-    {"id": "003", "center_um": (207.0, 184.0)},
+    {"id": "001", "center_um": (36.0, 42.0), "label": "isolated_Fe_particle"},
+    {"id": "002", "center_um": (79.0, 80.0), "label": "partially_overlapping_Fe_Mn_pair"},
+    {"id": "003", "center_um": (126.0, 53.0), "label": "three_element_overlap"},
+    {"id": "004", "center_um": (178.0, 70.0), "label": "nearby_non_touching_Fe_Cr_pair"},
+    {"id": "005", "center_um": (94.0, 177.0), "label": "large_Mn_Cr_particle"},
+    {"id": "006", "center_um": (209.0, 207.0), "label": "large_isolated_Cr_particle"},
 )
 ELEMENTS = ("Fe", "Mn", "Cr")
 
 
-def gaussian(x: np.ndarray, y: np.ndarray, x0: float, y0: float, sigma: float, amplitude: float) -> np.ndarray:
-    """Return one circular XRF-like intensity feature."""
-    return amplitude * np.exp(-((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma**2))
+def gaussian(
+    x: np.ndarray,
+    y: np.ndarray,
+    x0: float,
+    y0: float,
+    sigma_x: float,
+    sigma_y: float,
+    angle_degrees: float,
+    amplitude: float,
+) -> np.ndarray:
+    """Return one rotated, elliptical XRF-like particle."""
+    angle = np.deg2rad(angle_degrees)
+    dx, dy = x - x0, y - y0
+    rotated_x = dx * np.cos(angle) + dy * np.sin(angle)
+    rotated_y = -dx * np.sin(angle) + dy * np.cos(angle)
+    return amplitude * np.exp(-(rotated_x**2 / (2 * sigma_x**2) + rotated_y**2 / (2 * sigma_y**2)))
 
 
 def synthetic_element(x: np.ndarray, y: np.ndarray, element: str) -> np.ndarray:
@@ -35,29 +51,45 @@ def synthetic_element(x: np.ndarray, y: np.ndarray, element: str) -> np.ndarray:
     signal = np.full_like(x, 12.0, dtype=np.float64)
     signal += 1.8 * np.sin(x / 17.0) * np.cos(y / 23.0)
 
-    # Each feature has a distinct response in Fe, Mn, and Cr. It lets the GUI
-    # combine and select element maps while all channels share one coordinate frame.
-    broad_features = (
-        (78.0, 92.0, 3.0, {"Fe": 220.0, "Mn": 70.0, "Cr": 35.0}),
-        (151.0, 61.0, 2.5, {"Fe": 95.0, "Mn": 185.0, "Cr": 55.0}),
-        (207.0, 184.0, 3.8, {"Fe": 80.0, "Mn": 65.0, "Cr": 250.0}),
-        (42.0, 205.0, 6.0, {"Fe": 80.0, "Mn": 20.0, "Cr": 40.0}),
-        (224.0, 42.0, 5.0, {"Fe": 45.0, "Mn": 100.0, "Cr": 70.0}),
+    # Sparse particles: isolated objects, partial overlaps, three-element
+    # overlap, and a pair that is close but deliberately non-touching.
+    particles = (
+        # x, y, sigma_x, sigma_y, angle, Fe, Mn, Cr
+        (36.0, 42.0, 1.4, 2.4, 15.0, 245.0, 0.0, 0.0),
+        (76.8, 79.4, 2.5, 1.4, -20.0, 215.0, 0.0, 0.0),
+        (80.7, 81.5, 2.0, 2.9, 35.0, 0.0, 210.0, 0.0),
+        (124.5, 52.0, 2.6, 1.8, 10.0, 190.0, 0.0, 0.0),
+        (127.0, 54.0, 2.0, 2.7, -35.0, 0.0, 185.0, 0.0),
+        (126.0, 50.5, 1.6, 2.1, 45.0, 0.0, 0.0, 205.0),
+        (174.0, 70.0, 1.5, 2.0, 0.0, 225.0, 0.0, 0.0),
+        (182.0, 70.2, 1.6, 1.4, 20.0, 0.0, 0.0, 230.0),
+        (94.0, 177.0, 4.6, 2.8, -10.0, 0.0, 210.0, 105.0),
+        (98.0, 179.0, 2.3, 1.5, 40.0, 0.0, 75.0, 185.0),
+        (209.0, 207.0, 5.5, 3.7, 25.0, 45.0, 0.0, 250.0),
+        (48.0, 224.0, 2.0, 3.1, -40.0, 90.0, 145.0, 0.0),
+        (231.0, 34.0, 3.2, 1.2, 5.0, 0.0, 120.0, 70.0),
     )
-    for x0, y0, sigma, amplitudes in broad_features:
-        signal += gaussian(x, y, x0, y0, sigma, amplitudes[element])
+    element_index = {"Fe": 5, "Mn": 6, "Cr": 7}[element]
+    for particle in particles:
+        amplitude = particle[element_index]
+        if amplitude:
+            signal += gaussian(x, y, *particle[:5], amplitude)
 
-    # Fine structure inside selected regions is suppressed by coarse sampling.
+    # Sub-micron details are visible in fine scans but mostly disappear in the
+    # coarser mosaic. They make the selected scan genuinely more informative.
     fine_features = (
-        (76.5, 91.2, 0.28, {"Fe": 170.0, "Mn": 35.0, "Cr": 20.0}),
-        (79.3, 93.1, 0.36, {"Fe": 85.0, "Mn": 130.0, "Cr": 25.0}),
-        (150.1, 60.0, 0.24, {"Fe": 25.0, "Mn": 150.0, "Cr": 45.0}),
-        (152.0, 62.5, 0.32, {"Fe": 40.0, "Mn": 80.0, "Cr": 115.0}),
-        (205.5, 183.2, 0.30, {"Fe": 65.0, "Mn": 40.0, "Cr": 185.0}),
-        (208.4, 185.7, 0.42, {"Fe": 120.0, "Mn": 45.0, "Cr": 145.0}),
+        (35.4, 41.1, 0.22, 0.35, 20.0, {"Fe": 130.0, "Mn": 0.0, "Cr": 0.0}),
+        (77.5, 80.1, 0.30, 0.20, -25.0, {"Fe": 130.0, "Mn": 0.0, "Cr": 0.0}),
+        (81.2, 82.0, 0.20, 0.36, 30.0, {"Fe": 0.0, "Mn": 140.0, "Cr": 0.0}),
+        (125.2, 53.3, 0.25, 0.18, 0.0, {"Fe": 80.0, "Mn": 95.0, "Cr": 110.0}),
+        (173.7, 69.2, 0.24, 0.32, 15.0, {"Fe": 145.0, "Mn": 0.0, "Cr": 0.0}),
+        (182.5, 70.7, 0.28, 0.20, -10.0, {"Fe": 0.0, "Mn": 0.0, "Cr": 150.0}),
+        (95.5, 176.0, 0.35, 0.22, 35.0, {"Fe": 0.0, "Mn": 115.0, "Cr": 80.0}),
+        (207.5, 208.0, 0.32, 0.40, -30.0, {"Fe": 0.0, "Mn": 0.0, "Cr": 170.0}),
     )
-    for x0, y0, sigma, amplitudes in fine_features:
-        signal += gaussian(x, y, x0, y0, sigma, amplitudes[element])
+    for x0, y0, sigma_x, sigma_y, angle, amplitudes in fine_features:
+        if amplitudes[element]:
+            signal += gaussian(x, y, x0, y0, sigma_x, sigma_y, angle, amplitudes[element])
 
     return signal.astype(np.float32)
 
@@ -107,6 +139,7 @@ def main() -> None:
                 "pixel_size_um": FINE_PIXEL_SIZE_UM,
                 "field_of_view_um": [FINE_FIELD_SIZE_UM, FINE_FIELD_SIZE_UM],
                 "center_in_mosaic_um": list(region["center_um"]),
+                "planned_region": region["label"],
             }
         )
     (OUTPUT_DIR / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n")

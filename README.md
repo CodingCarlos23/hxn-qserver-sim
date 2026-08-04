@@ -93,7 +93,7 @@ dataset for local image workflow development:
 
 - `mosaic_{Fe,Mn,Cr}.tiff`: aligned 1040 x 1040 float32 coarse mosaics covering
   260 x 260 um at 0.25 um/pixel.
-- `fine_spot_001_*` through `fine_spot_003_*`: three corresponding element
+- `fine_spot_001_*` through `fine_spot_006_*`: three corresponding element
   maps for each selected region. Each TIFF is 200 x 200 float32, covers 10 x
   10 um at 0.05 um/pixel, and is five times the mosaic's linear resolution.
 

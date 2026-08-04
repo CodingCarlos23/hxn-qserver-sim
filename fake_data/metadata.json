@@ -37,9 +37,10 @@
         10.0
       ],
       "center_in_mosaic_um": [
-        78.0,
-        92.0
-      ]
+        36.0,
+        42.0
+      ],
+      "planned_region": "isolated_Fe_particle"
     },
     {
       "files": [
@@ -57,9 +58,10 @@
         10.0
       ],
       "center_in_mosaic_um": [
-        151.0,
-        61.0
-      ]
+        79.0,
+        80.0
+      ],
+      "planned_region": "partially_overlapping_Fe_Mn_pair"
     },
     {
       "files": [
@@ -77,9 +79,73 @@
         10.0
       ],
       "center_in_mosaic_um": [
-        207.0,
-        184.0
-      ]
+        126.0,
+        53.0
+      ],
+      "planned_region": "three_element_overlap"
+    },
+    {
+      "files": [
+        "fine_spot_004_Fe.tiff",
+        "fine_spot_004_Mn.tiff",
+        "fine_spot_004_Cr.tiff"
+      ],
+      "shape_px": [
+        200,
+        200
+      ],
+      "pixel_size_um": 0.05,
+      "field_of_view_um": [
+        10.0,
+        10.0
+      ],
+      "center_in_mosaic_um": [
+        178.0,
+        70.0
+      ],
+      "planned_region": "nearby_non_touching_Fe_Cr_pair"
+    },
+    {
+      "files": [
+        "fine_spot_005_Fe.tiff",
+        "fine_spot_005_Mn.tiff",
+        "fine_spot_005_Cr.tiff"
+      ],
+      "shape_px": [
+        200,
+        200
+      ],
+      "pixel_size_um": 0.05,
+      "field_of_view_um": [
+        10.0,
+        10.0
+      ],
+      "center_in_mosaic_um": [
+        94.0,
+        177.0
+      ],
+      "planned_region": "large_Mn_Cr_particle"
+    },
+    {
+      "files": [
+        "fine_spot_006_Fe.tiff",
+        "fine_spot_006_Mn.tiff",
+        "fine_spot_006_Cr.tiff"
+      ],
+      "shape_px": [
+        200,
+        200
+      ],
+      "pixel_size_um": 0.05,
+      "field_of_view_um": [
+        10.0,
+        10.0
+      ],
+      "center_in_mosaic_um": [
+        209.0,
+        207.0
+      ],
+      "planned_region": "large_isolated_Cr_particle"
     }
   ]
 }

@@ -7,6 +7,10 @@
 synthetic scene at 0.05 um/pixel, covering 10 x 10 um at five times the
 mosaic's linear resolution.
 
+The six fine-scan sets correspond to an isolated particle, a partially
+overlapping Fe/Mn pair, a three-element overlap, a nearby but non-touching
+Fe/Cr pair, a large Mn/Cr particle, and a large isolated Cr particle.
+
 `metadata.json` records each fine scan's physical center in the mosaic frame.
 Regenerate the files with:
 

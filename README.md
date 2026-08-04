@@ -88,14 +88,14 @@ beamline authorization.
 
 ## Synthetic test data
 
-`fake_data/` contains a deterministic Fe-only sample dataset for local image
-workflow development:
+`fake_data/` contains a deterministic three-element (Fe, Mn, and Cr) sample
+dataset for local image workflow development:
 
-- `mosaic_Fe.tiff`: a 1040 x 1040 float32 coarse mosaic covering 260 x 260 um
-  at 0.25 um/pixel.
-- `fine_spot_001_Fe.tiff` through `fine_spot_003_Fe.tiff`: 200 x 200 float32
-  fine scans of selected mosaic features. Each covers 10 x 10 um at 0.05
-  um/pixel, five times the mosaic's linear resolution.
+- `mosaic_{Fe,Mn,Cr}.tiff`: aligned 1040 x 1040 float32 coarse mosaics covering
+  260 x 260 um at 0.25 um/pixel.
+- `fine_spot_001_*` through `fine_spot_003_*`: three corresponding element
+  maps for each selected region. Each TIFF is 200 x 200 float32, covers 10 x
+  10 um at 0.05 um/pixel, and is five times the mosaic's linear resolution.
 
 The files describe the same synthetic sample: a fine scan is spatially aligned
 with its corresponding region in the mosaic, while exposing extra small-scale

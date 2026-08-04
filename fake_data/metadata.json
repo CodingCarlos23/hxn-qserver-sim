@@ -1,7 +1,15 @@
 {
-  "element": "Fe",
+  "elements": [
+    "Fe",
+    "Mn",
+    "Cr"
+  ],
   "mosaic": {
-    "file": "mosaic_Fe.tiff",
+    "files": [
+      "mosaic_Fe.tiff",
+      "mosaic_Mn.tiff",
+      "mosaic_Cr.tiff"
+    ],
     "shape_px": [
       1040,
       1040
@@ -14,7 +22,11 @@
   },
   "fine_scans": [
     {
-      "file": "fine_spot_001_Fe.tiff",
+      "files": [
+        "fine_spot_001_Fe.tiff",
+        "fine_spot_001_Mn.tiff",
+        "fine_spot_001_Cr.tiff"
+      ],
       "shape_px": [
         200,
         200
@@ -30,7 +42,11 @@
       ]
     },
     {
-      "file": "fine_spot_002_Fe.tiff",
+      "files": [
+        "fine_spot_002_Fe.tiff",
+        "fine_spot_002_Mn.tiff",
+        "fine_spot_002_Cr.tiff"
+      ],
       "shape_px": [
         200,
         200
@@ -46,7 +62,11 @@
       ]
     },
     {
-      "file": "fine_spot_003_Fe.tiff",
+      "files": [
+        "fine_spot_003_Fe.tiff",
+        "fine_spot_003_Mn.tiff",
+        "fine_spot_003_Cr.tiff"
+      ],
       "shape_px": [
         200,
         200

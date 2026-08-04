@@ -1,19 +1,18 @@
-# Synthetic XRF data
+# Local synthetic data
 
-`mosaic_Fe.tiff`, `mosaic_Mn.tiff`, and `mosaic_Cr.tiff` are aligned 1040 x
-1040 float32 element maps sampled at 0.25 um/pixel, each representing a 260 x
-260 um coarse mosaic. Each selected region has matching Fe, Mn, and Cr
-`fine_spot_*` TIFFs. They are 200 x 200 float32 maps sampled from the same
-synthetic scene at 0.05 um/pixel, covering 10 x 10 um at five times the
-mosaic's linear resolution.
+This directory intentionally contains no committed data files. It is reserved
+for locally generated synthetic mosaics, per-element fine-scan maps, merged
+fine scans, and analysis outputs. All contents except this README are ignored
+by Git.
 
-The six fine-scan sets correspond to an isolated particle, a partially
-overlapping Fe/Mn pair, a three-element overlap, a nearby but non-touching
-Fe/Cr pair, a large Mn/Cr particle, and a large isolated Cr particle.
-
-`metadata.json` records each fine scan's physical center in the mosaic frame.
-Regenerate the files with:
+Generate the local coarse and per-element fine data with:
 
 ```bash
 pixi run python scripts/generate_fake_data.py
+```
+
+Then create merged RGB fine scans with:
+
+```bash
+pixi run python scripts/merge_fine_scans.py
 ```

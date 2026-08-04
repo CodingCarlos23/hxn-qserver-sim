@@ -24,6 +24,10 @@ FINE_REGIONS = (
     {"id": "004", "center_um": (178.0, 70.0), "label": "nearby_non_touching_Fe_Cr_pair"},
     {"id": "005", "center_um": (94.0, 177.0), "label": "large_Mn_Cr_particle"},
     {"id": "006", "center_um": (209.0, 207.0), "label": "large_isolated_Cr_particle"},
+    {"id": "007", "center_um": (54.0, 132.0), "label": "isolated_Mn_particle"},
+    {"id": "008", "center_um": (146.0, 145.0), "label": "partially_overlapping_Fe_Cr_pair"},
+    {"id": "009", "center_um": (185.0, 121.0), "label": "nearby_non_touching_Mn_Cr_pair"},
+    {"id": "010", "center_um": (229.0, 35.0), "label": "small_three_element_cluster"},
 )
 ELEMENTS = ("Fe", "Mn", "Cr")
 
@@ -66,8 +70,15 @@ def synthetic_element(x: np.ndarray, y: np.ndarray, element: str) -> np.ndarray:
         (94.0, 177.0, 4.6, 2.8, -10.0, 0.0, 210.0, 105.0),
         (98.0, 179.0, 2.3, 1.5, 40.0, 0.0, 75.0, 185.0),
         (209.0, 207.0, 5.5, 3.7, 25.0, 45.0, 0.0, 250.0),
+        (54.0, 132.0, 2.4, 1.7, 55.0, 0.0, 235.0, 0.0),
+        (144.5, 144.0, 3.1, 1.8, -15.0, 205.0, 0.0, 0.0),
+        (147.8, 146.2, 2.0, 2.8, 35.0, 0.0, 0.0, 215.0),
+        (181.0, 120.5, 1.9, 1.3, 10.0, 0.0, 205.0, 0.0),
+        (189.0, 121.8, 1.5, 2.2, -30.0, 0.0, 0.0, 220.0),
+        (228.0, 34.0, 1.8, 1.3, 5.0, 110.0, 45.0, 0.0),
+        (230.2, 35.6, 1.4, 1.9, 40.0, 0.0, 100.0, 55.0),
+        (228.8, 37.2, 1.2, 1.5, -25.0, 40.0, 0.0, 125.0),
         (48.0, 224.0, 2.0, 3.1, -40.0, 90.0, 145.0, 0.0),
-        (231.0, 34.0, 3.2, 1.2, 5.0, 0.0, 120.0, 70.0),
     )
     element_index = {"Fe": 5, "Mn": 6, "Cr": 7}[element]
     for particle in particles:
@@ -86,6 +97,12 @@ def synthetic_element(x: np.ndarray, y: np.ndarray, element: str) -> np.ndarray:
         (182.5, 70.7, 0.28, 0.20, -10.0, {"Fe": 0.0, "Mn": 0.0, "Cr": 150.0}),
         (95.5, 176.0, 0.35, 0.22, 35.0, {"Fe": 0.0, "Mn": 115.0, "Cr": 80.0}),
         (207.5, 208.0, 0.32, 0.40, -30.0, {"Fe": 0.0, "Mn": 0.0, "Cr": 170.0}),
+        (53.5, 132.3, 0.22, 0.34, 45.0, {"Fe": 0.0, "Mn": 155.0, "Cr": 0.0}),
+        (145.0, 144.8, 0.36, 0.20, -15.0, {"Fe": 140.0, "Mn": 0.0, "Cr": 0.0}),
+        (148.2, 146.6, 0.20, 0.32, 35.0, {"Fe": 0.0, "Mn": 0.0, "Cr": 160.0}),
+        (180.7, 120.1, 0.25, 0.20, 10.0, {"Fe": 0.0, "Mn": 140.0, "Cr": 0.0}),
+        (189.3, 122.4, 0.18, 0.30, -20.0, {"Fe": 0.0, "Mn": 0.0, "Cr": 165.0}),
+        (229.0, 35.7, 0.22, 0.24, 0.0, {"Fe": 90.0, "Mn": 105.0, "Cr": 115.0}),
     )
     for x0, y0, sigma_x, sigma_y, angle, amplitudes in fine_features:
         if amplitudes[element]:
@@ -110,6 +127,13 @@ def sample_image(
 
 def main() -> None:
     OUTPUT_DIR.mkdir(exist_ok=True)
+    # Remove previous TIFFs owned by this generator before writing a fresh set.
+    # Keep unrelated user files and downstream analysis outputs intact.
+    for element in ELEMENTS:
+        (OUTPUT_DIR / f"mosaic_{element}.tiff").unlink(missing_ok=True)
+        for old_fine_scan in OUTPUT_DIR.glob(f"fine_spot_*_{element}.tiff"):
+            old_fine_scan.unlink()
+
     metadata: dict[str, object] = {
         "elements": list(ELEMENTS),
         "mosaic": {

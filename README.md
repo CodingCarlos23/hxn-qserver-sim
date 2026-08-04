@@ -88,22 +88,20 @@ beamline authorization.
 
 ## Synthetic test data
 
-`fake_data/` contains a deterministic three-element (Fe, Mn, and Cr) sample
-dataset for local image workflow development:
-
-- `mosaic_{Fe,Mn,Cr}.tiff`: aligned 1040 x 1040 float32 coarse mosaics covering
-  260 x 260 um at 0.25 um/pixel.
-- `fine_spot_001_*` through `fine_spot_006_*`: three corresponding element
-  maps for each selected region. Each TIFF is 200 x 200 float32, covers 10 x
-  10 um at 0.05 um/pixel, and is five times the mosaic's linear resolution.
-
-The files describe the same synthetic sample: a fine scan is spatially aligned
-with its corresponding region in the mosaic, while exposing extra small-scale
-features. `fake_data/metadata.json` records each fine scan's center in mosaic
-coordinates. Regenerate the dataset with:
+`fake_data/` is intentionally empty in Git and is reserved for locally
+generated synthetic data. It is ignored except for its README. Generate the
+three-element (Fe, Mn, and Cr) coarse mosaics and the corresponding fine-scan
+source maps with:
 
 ```bash
 pixi run python scripts/generate_fake_data.py
+```
+
+To create one merged Fe/Cr/Mn RGB fine-scan TIFF for each selected region,
+without changing the coarse mosaics, run:
+
+```bash
+pixi run python scripts/merge_fine_scans.py
 ```
 
 ## TODO

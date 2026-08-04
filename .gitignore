@@ -4,3 +4,5 @@ __pycache__/
 output/*.json
 output/*.txt
 !output/.gitkeep
+fake_data/*
+!fake_data/README.md

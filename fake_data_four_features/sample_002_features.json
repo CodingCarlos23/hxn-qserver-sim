@@ -1,0 +1,23 @@
+{
+  "features": [
+    {
+      "description": "bright region with high signal",
+      "id": 1,
+      "label": "particle cluster",
+      "x1": 0.05,
+      "x2": 0.55,
+      "y1": 0.25,
+      "y2": 0.75
+    },
+    {
+      "description": "bright region with high signal",
+      "id": 2,
+      "label": "particle cluster",
+      "x1": 0.55,
+      "x2": 0.95,
+      "y1": 0.25,
+      "y2": 0.75
+    }
+  ],
+  "total_count": 2
+}

@@ -1,0 +1,41 @@
+{
+  "features": [
+    {
+      "description": "[TL] central bright region",
+      "id": 1,
+      "label": "bright core",
+      "x1": 0.225,
+      "x2": 0.275,
+      "y1": 0.225,
+      "y2": 0.275
+    },
+    {
+      "description": "[TR] brightest region with high signal",
+      "id": 2,
+      "label": "bright core",
+      "x1": 0.725,
+      "x2": 0.775,
+      "y1": 0.25,
+      "y2": 0.3
+    },
+    {
+      "description": "[BL] central bright spot",
+      "id": 3,
+      "label": "bright core",
+      "x1": 0.225,
+      "x2": 0.275,
+      "y1": 0.725,
+      "y2": 0.775
+    },
+    {
+      "description": "[BR] central bright spot",
+      "id": 4,
+      "label": "bright core",
+      "x1": 0.725,
+      "x2": 0.775,
+      "y1": 0.725,
+      "y2": 0.775
+    }
+  ],
+  "total_count": 4
+}

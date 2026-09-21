@@ -1,0 +1,42 @@
+{
+  "sample": "sample_003",
+  "seed": 303,
+  "image_size_px": 512,
+  "features": [
+    {
+      "id": 1,
+      "label": "feature_A",
+      "x1": 0.1955,
+      "y1": 0.1836,
+      "x2": 0.3672,
+      "y2": 0.3115,
+      "center_px": [
+        144.1,
+        126.8
+      ],
+      "sigma_px": [
+        14.7,
+        10.9
+      ],
+      "amplitude": 140.8
+    },
+    {
+      "id": 2,
+      "label": "feature_B",
+      "x1": 0.3904,
+      "y1": 0.7672,
+      "x2": 0.5122,
+      "y2": 0.8975,
+      "center_px": [
+        231.1,
+        426.2
+      ],
+      "sigma_px": [
+        10.4,
+        11.1
+      ],
+      "amplitude": 151.2
+    }
+  ],
+  "total_count": 2
+}

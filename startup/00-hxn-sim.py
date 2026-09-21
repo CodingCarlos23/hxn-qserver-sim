@@ -19,9 +19,65 @@ from bluesky import plan_stubs as bps
 
 
 OUTPUT_DIR = Path(os.environ.get("HXN_QSERVER_SIM_OUTPUT", "output"))
+LOG_FILE = OUTPUT_DIR / "log.txt"
 
 # QueueServer discovers this conventional global when it opens the worker.
 RE = RunEngine({})
+
+
+def _scan_type(plan_name: str, parameters: dict) -> str:
+    """Derive a human-readable scan type label from the plan name and parameters."""
+    if plan_name == "fly2d_qserver_scan_export":
+        roi = parameters.get("roi_json", "")
+        if roi and roi not in ('""', ""):
+            try:
+                roi_dict = json.loads(roi)
+                if any(v != 0.0 for v in roi_dict.values()):
+                    return "FINE_SCAN"
+            except Exception:
+                pass
+        return "COARSE_SCAN"
+    if plan_name == "move_relative":
+        return "TILE_MOVE"
+    if plan_name == "mov":
+        return "STAGE_RESET"
+    if plan_name == "piezos_to_zero":
+        return "PIEZO_RESET"
+    if plan_name == "recover_zp_csan_pos":
+        return "RECOVER_POS"
+    return plan_name.upper()
+
+
+def _log_line(plan_name: str, parameters: dict, timestamp: str) -> str:
+    """Build a concise single log line for the plan."""
+    ts = timestamp[:19].replace("T", " ")
+    scan_type = _scan_type(plan_name, parameters)
+
+    if plan_name == "fly2d_qserver_scan_export":
+        label = parameters.get("label", "")
+        m1, m1s, m1e, m1n = parameters.get("mot1",""), parameters.get("mot1_start",""), parameters.get("mot1_end",""), parameters.get("mot1_points","")
+        m2, m2s, m2e, m2n = parameters.get("mot2",""), parameters.get("mot2_start",""), parameters.get("mot2_end",""), parameters.get("mot2_points","")
+        roi = parameters.get("roi_json", "")
+        roi_part = f"  roi={roi}" if roi and roi not in ('""', "") else ""
+        detail = (
+            f"label={label}  "
+            f"{m1}[{m1s}→{m1e}, {m1n}pts]  "
+            f"{m2}[{m2s}→{m2e}, {m2n}pts]"
+            f"{roi_part}"
+        )
+    elif plan_name == "move_relative":
+        detail = f"motor={parameters.get('motor','')}  distance={parameters.get('distance','')}"
+    elif plan_name == "mov":
+        args = parameters.get("arguments", ())
+        detail = "  ".join(f"{args[i]}={args[i+1]}" for i in range(0, len(args)-1, 2))
+    elif plan_name == "piezos_to_zero":
+        detail = ""
+    elif plan_name == "recover_zp_csan_pos":
+        detail = f"ref_scan_id={parameters.get('ref_scan_id','')}  zp_move_flag={parameters.get('zp_move_flag','')}  smar_move_flag={parameters.get('smar_move_flag','')}"
+    else:
+        detail = "  ".join(f"{k}={v}" for k, v in parameters.items())
+
+    return f"{ts}  {scan_type:<12}  {plan_name:<30}  {detail}\n"
 
 
 def _record(plan_name: str, **parameters) -> dict[str, str]:
@@ -45,6 +101,8 @@ def _record(plan_name: str, **parameters) -> dict[str, str]:
         f"Request ID: {request['id']}\n\n"
         f"Input received:\n{formatted_request}\n"
     )
+    with open(LOG_FILE, "a") as lf:
+        lf.write(_log_line(plan_name, parameters, request["timestamp"]))
     print(f"[HXN SIM] {plan_name}: recorded request at {text_path}")
     return {
         "request_id": request["id"],
@@ -98,28 +156,28 @@ def fly2d_qserver_scan_export(
         export_norm=export_norm,
         requested_data_directory=data_wd,
     )
-    yield from bps.sleep(0.01)
+    yield from bps.sleep(0.0001)
     return {"success": True, **receipt}
 
 
 def piezos_to_zero():
     """Simulate resetting piezo stages."""
     receipt = _record("piezos_to_zero")
-    yield from bps.sleep(0.01)
+    yield from bps.sleep(0.0001)
     return {"success": True, **receipt}
 
 
 def move_relative(motor, distance):
     """Simulate an HXN relative motor move."""
     receipt = _record("move_relative", motor=motor, distance=distance)
-    yield from bps.sleep(0.01)
+    yield from bps.sleep(0.0001)
     return {"success": True, **receipt}
 
 
 def mov(*args):
     """Simulate Bluesky's multi-motor absolute move helper."""
     receipt = _record("mov", arguments=args)
-    yield from bps.sleep(0.01)
+    yield from bps.sleep(0.0001)
     return {"success": True, **receipt}
 
 
@@ -132,5 +190,5 @@ def recover_zp_csan_pos(ref_scan_id, zp_move_flag=0, smar_move_flag=1, move_base
         smar_move_flag=smar_move_flag,
         move_base=move_base,
     )
-    yield from bps.sleep(0.01)
+    yield from bps.sleep(0.0001)
     return {"success": True, **receipt}

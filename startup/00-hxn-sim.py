@@ -20,6 +20,7 @@ from bluesky import plan_stubs as bps
 
 OUTPUT_DIR = Path(os.environ.get("HXN_QSERVER_SIM_OUTPUT", "output"))
 LOG_FILE = OUTPUT_DIR / "log.txt"
+RECORDS_FILE = OUTPUT_DIR / "records.jsonl"
 
 # QueueServer discovers this conventional global when it opens the worker.
 RE = RunEngine({})
@@ -81,7 +82,7 @@ def _log_line(plan_name: str, parameters: dict, timestamp: str) -> str:
 
 
 def _record(plan_name: str, **parameters) -> dict[str, str]:
-    """Persist one simulated QueueServer request for inspection and confirmation."""
+    """Persist one simulated QueueServer request to the shared log and records file."""
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     request = {
         "id": str(uuid4()),
@@ -89,26 +90,14 @@ def _record(plan_name: str, **parameters) -> dict[str, str]:
         "plan_name": plan_name,
         "parameters": parameters,
     }
-    stem = f"{request['timestamp'].replace(':', '-')}_{request['id']}"
-    json_path = OUTPUT_DIR / f"{stem}.json"
-    text_path = OUTPUT_DIR / f"{stem}.txt"
-    formatted_request = json.dumps(request, indent=2, default=str)
-    json_path.write_text(formatted_request + "\n")
-    text_path.write_text(
-        "HXN QueueServer simulator receipt\n"
-        f"Sent (UTC): {request['timestamp']}\n"
-        f"Plan: {plan_name}\n"
-        f"Request ID: {request['id']}\n\n"
-        f"Input received:\n{formatted_request}\n"
-    )
     with open(LOG_FILE, "a") as lf:
         lf.write(_log_line(plan_name, parameters, request["timestamp"]))
-    print(f"[HXN SIM] {plan_name}: recorded request at {text_path}")
+    with open(RECORDS_FILE, "a") as rf:
+        rf.write(json.dumps(request, default=str) + "\n")
+    print(f"[HXN SIM] {plan_name}")
     return {
         "request_id": request["id"],
         "timestamp": request["timestamp"],
-        "json_receipt": str(json_path.resolve()),
-        "text_receipt": str(text_path.resolve()),
     }
 
 
@@ -156,28 +145,28 @@ def fly2d_qserver_scan_export(
         export_norm=export_norm,
         requested_data_directory=data_wd,
     )
-    yield from bps.sleep(0.0001)
+    yield from bps.sleep(0.05)
     return {"success": True, **receipt}
 
 
 def piezos_to_zero():
     """Simulate resetting piezo stages."""
     receipt = _record("piezos_to_zero")
-    yield from bps.sleep(0.0001)
+    yield from bps.sleep(0.05)
     return {"success": True, **receipt}
 
 
 def move_relative(motor, distance):
     """Simulate an HXN relative motor move."""
     receipt = _record("move_relative", motor=motor, distance=distance)
-    yield from bps.sleep(0.0001)
+    yield from bps.sleep(0.05)
     return {"success": True, **receipt}
 
 
 def mov(*args):
     """Simulate Bluesky's multi-motor absolute move helper."""
     receipt = _record("mov", arguments=args)
-    yield from bps.sleep(0.0001)
+    yield from bps.sleep(0.05)
     return {"success": True, **receipt}
 
 
@@ -190,5 +179,5 @@ def recover_zp_csan_pos(ref_scan_id, zp_move_flag=0, smar_move_flag=1, move_base
         smar_move_flag=smar_move_flag,
         move_base=move_base,
     )
-    yield from bps.sleep(0.0001)
+    yield from bps.sleep(0.05)
     return {"success": True, **receipt}

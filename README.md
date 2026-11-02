@@ -9,7 +9,7 @@ motors, detectors, Tiled, databroker, or beamline file systems.
 Clone the repository, then run:
 
 ```bash
-git clone https://github.com/<your-github-username>/hxn-qserver-sim.git
+git clone https://github.com/CodingCarlos23/hxn-qserver-sim.git
 cd hxn-qserver-sim
 pixi install
 pixi run generate-lists

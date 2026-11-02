@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 output/*.json
+output/*.jsonl
 output/*.txt
 !output/.gitkeep
 fake_data/*
